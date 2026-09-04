@@ -1,0 +1,11 @@
+# LF everywhere. A CRLF shebang fails inside a Linux container with an opaque
+# "bad interpreter" error, and mvnw / the entrypoint scripts are run in containers.
+* text=auto eol=lf
+
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+*.jar binary
+*.png binary
+*.gz  binary
+*.zip binary

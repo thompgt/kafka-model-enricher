@@ -1,0 +1,25 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Local run output — regenerate, never commit
+results/
+logs/
+*.hlog
+*.hgrm
+
+# Local environment
+.env
+.env.local
+
+# OS
+Thumbs.db
+.DS_Store
