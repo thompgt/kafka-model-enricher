@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: kafka-model-enricher
+  main:
+    web-application-type: servlet
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# Nothing operational is hardcoded in Java (CLAUDE.md, "Configuration").
+# These are the Phase 0 defaults; each section is consumed by the phase that
+# introduces the mechanism it configures.
+enricher:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    group-id: enricher
+    source-topic: events.raw
+    enriched-topic: events.enriched
+    retry-topic: events.retry
+    dlq-topic: events.dlq
+
+  # Phase 2/3. The window is what makes heap independent of consumer lag, and it
+  # is bounded in bytes as well as records because a hundred 400KB events and a
+  # hundred 400-byte events are not the same heap.
+  window:
+    max-in-flight-records: 256
+    max-in-flight-bytes: 33554432   # 32 MiB
+
+  # Phase 4.
+  model:
+    backend: fake                   # fake | ollama
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      model: llama3.2:1b            # pinned by digest in Phase 4, see workplan Q-1
+      timeout: 30s
+    prompt-version: support-v1
+    schema-version: 1
+
+  # Phase 5.
+  batching:
+    enabled: false
+    max-records: 10
+    linger: 200ms
+
+  # Phase 6.
+  retry:
+    max-attempts: 4
+    initial-backoff: 200ms
+    max-backoff: 30s
+    jitter: full

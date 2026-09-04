@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>dev.thompgt.enricher</groupId>
+    <artifactId>kafka-model-enricher</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>enricher-core</artifactId>
+  <name>enricher-core</name>
+  <description>
+    Framework-free correctness core: offset watermark tracking, the bounded
+    in-flight window, concurrency limiting, retry policy, error classification,
+    batching, caching, and the ports the other modules implement.
+  </description>
+
+  <!--
+    INVARIANT 3 (CLAUDE.md): this module contains no Kafka and no Spring types.
+
+    The offset watermark and the in-flight window are where a bug loses data
+    without raising an error, so they need property tests over thousands of
+    randomised interleavings in milliseconds. That stops being possible the
+    moment a broker or an application context is required to construct them.
+    The ban below is enforced by the build rather than left to discipline.
+  -->
+
+  <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>net.jqwik</groupId>
+      <artifactId>jqwik</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>ban-framework-dependencies</id>
+            <goals><goal>enforce</goal></goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>org.apache.kafka:*</exclude>
+                    <exclude>org.springframework:*</exclude>
+                    <exclude>org.springframework.boot:*</exclude>
+                  </excludes>
+                  <message>
+                    enricher-core must stay free of Kafka and Spring (CLAUDE.md
+                    invariant 3). Put the adapter in enricher-kafka or
+                    enricher-app instead, and keep the port here.
+                  </message>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
